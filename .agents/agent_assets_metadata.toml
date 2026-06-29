@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "LfmUz9xmbXScRHobw7VKA"
+uri = "file://artifacts/portfolio-tracker/assets/images/icon.png"
+type = "image"
+title = "generated_image"
