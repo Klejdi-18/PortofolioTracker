@@ -8,8 +8,8 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { router, Slot, useSegments } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Platform, StyleSheet, Text, View } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider, useSafeAreaInsets } from "react-native-safe-area-context";
@@ -68,14 +68,34 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      const handler = (event: PromiseRejectionEvent) => {
+        if (event.reason?.message?.includes("timeout")) {
+          event.preventDefault();
+        }
+      };
+      window.addEventListener("unhandledrejection", handler);
+      return () => window.removeEventListener("unhandledrejection", handler);
+    }
+  }, []);
 
   useEffect(() => {
     if (fontsLoaded || fontError) {
       SplashScreen.hideAsync();
+      setReady(true);
+      return;
     }
+    const t = setTimeout(() => {
+      SplashScreen.hideAsync();
+      setReady(true);
+    }, 5000);
+    return () => clearTimeout(t);
   }, [fontsLoaded, fontError]);
 
-  if (!fontsLoaded && !fontError) return null;
+  if (!ready) return null;
 
   return (
     <SafeAreaProvider>
