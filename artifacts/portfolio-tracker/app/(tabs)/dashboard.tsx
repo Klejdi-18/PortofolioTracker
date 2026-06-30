@@ -210,7 +210,7 @@ export default function DashboardScreen() {
       <View style={s.section}>
         <View style={s.sectionHeader}>
           <Text style={s.sectionTitle}>Recent Projects</Text>
-          <Pressable onPress={() => router.push("/(tabs)/")}>
+          <Pressable onPress={() => router.push("/")}>
             <Text style={s.seeAllText}>See all</Text>
           </Pressable>
         </View>
