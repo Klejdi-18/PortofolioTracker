@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
-import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useState } from "react";
+import { router } from "expo-router";
+import React from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -13,63 +13,14 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
-import { supabase } from "@/services/supabaseClient";
-import { Project } from "@/types";
-
-interface Stats {
-  total: number;
-  addedThisWeek: number;
-  addedThisMonth: number;
-  recentProjects: Project[];
-}
+import { useProjectStats } from "@/hooks/useProjectStats";
 
 export default function DashboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
 
-  const [stats, setStats] = useState<Stats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const fetchStats = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const { data, error } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (error) throw error;
-
-      const projects: Project[] = data ?? [];
-      const now = new Date();
-      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-
-      setStats({
-        total: projects.length,
-        addedThisWeek: projects.filter(
-          (p) => new Date(p.created_at) >= weekAgo
-        ).length,
-        addedThisMonth: projects.filter(
-          (p) => new Date(p.created_at) >= monthAgo
-        ).length,
-        recentProjects: projects.slice(0, 5),
-      });
-    } catch {
-      setStats({ total: 0, addedThisWeek: 0, addedThisMonth: 0, recentProjects: [] });
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchStats();
-    }, [fetchStats])
-  );
+  const { stats, loading } = useProjectStats();
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const bottomPad = insets.bottom + (Platform.OS === "web" ? 34 : 20);
@@ -278,6 +229,20 @@ export default function DashboardScreen() {
             </View>
           ))
         )}
+      </View>
+
+      <View style={s.section}>
+        <Text style={[s.sectionTitle, { marginBottom: 12 }]}>Activity</Text>
+        <View style={s.periodCards}>
+          <View style={s.periodCard}>
+            <Text style={s.periodValue}>{stats?.addedThisWeek ?? 0}</Text>
+            <Text style={s.periodLabel}>This Week</Text>
+          </View>
+          <View style={s.periodCard}>
+            <Text style={s.periodValue}>{stats?.addedThisMonth ?? 0}</Text>
+            <Text style={s.periodLabel}>This Month</Text>
+          </View>
+        </View>
       </View>
 
       <Pressable style={s.addButton} onPress={() => router.push("/add-project")}>

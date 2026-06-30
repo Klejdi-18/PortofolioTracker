@@ -1,7 +1,7 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import { router, useFocusEffect } from "expo-router";
-import React, { useCallback, useState } from "react";
+import { router } from "expo-router";
+import React, { useState } from "react";
 import {
   FlatList,
   Platform,
@@ -15,61 +15,16 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ProjectCard } from "@/components/ProjectCard";
 import { ProjectCardSkeleton } from "@/components/SkeletonLoader";
-import { useAuth } from "@/context/AuthContext";
 import { useColors } from "@/hooks/useColors";
-import { supabase } from "@/services/supabaseClient";
-import { Project } from "@/types";
+import { useProjects } from "@/hooks/useProjects";
 
 export default function HomeScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { user } = useAuth();
-
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [search, setSearch] = useState("");
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchProjects = useCallback(async () => {
-    if (!user) return;
-    try {
-      const { data, error: fetchError } = await supabase
-        .from("projects")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-
-      if (fetchError) throw fetchError;
-      setProjects(data ?? []);
-      setError(null);
-    } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : "Failed to load projects";
-      setError(message);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [user]);
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchProjects();
-    }, [fetchProjects])
-  );
-
-  const handleRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchProjects();
-  }, [fetchProjects]);
-
-  const handleDelete = useCallback(async (id: string) => {
-    setProjects((prev) => prev.filter((p) => p.id !== id));
-    const { error: deleteError } = await supabase.from("projects").delete().eq("id", id);
-    if (deleteError) {
-      fetchProjects();
-    }
-  }, [fetchProjects]);
+  const { projects, loading, refreshing, error, handleRefresh, handleDelete } =
+    useProjects();
 
   const filtered = search.trim()
     ? projects.filter(
