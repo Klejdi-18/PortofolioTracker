@@ -104,7 +104,7 @@ Each authenticated user can only access their own projects through **Row Level S
 1. Clone the repository
 
 ```bash
-git clone https://github.com/yourusername/portfolio-tracker.git
+git clone https://github.com/Klejdi-18/PortofolioTracker
 ```
 
 2. Install dependencies
@@ -118,8 +118,8 @@ npm install
 Create a `.env` file and add:
 
 ```env
-EXPO_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
-EXPO_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
+EXPO_PUBLIC_SUPABASE_URL=https://supabase.com/dashboard/project/hzdqyzntdrsmlqnessnt
+EXPO_PUBLIC_SUPABASE_ANON_KEY= sb_publishable_iIJI2QJNAGBuJAQSCK7X5A_yFsm8fV6
 ```
 
 4. Start the project
